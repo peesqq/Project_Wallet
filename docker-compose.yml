@@ -1,0 +1,34 @@
+version: '3.8'
+services:
+  wallet_db:
+    image: postgres:14
+    container_name: wallet_db
+    environment:
+      POSTGRES_USER: "wallet_user"
+      POSTGRES_PASSWORD: "wallet_pass"
+      POSTGRES_DB: "wallet_db"
+    ports:
+      - "5436:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d
+
+  app:
+    build:
+      context: .
+    container_name: wallet_app
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: "8080"
+      DB_HOST: "wallet_db"
+      DB_PORT: "5432"
+      DB_USER: "wallet_user"
+      DB_PASSWORD: "wallet_pass"
+      DB_NAME: "wallet_db"
+    entrypoint: ["sh", "-c", "sleep 8 && ./main"] #задержка на 8 секунд для того что бы база данных полностью создалась
+    depends_on:
+      - wallet_db
+
+volumes:
+  db_data:
